@@ -1,0 +1,1275 @@
+
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>दिनमान — लघु पंचांग | An Heirloom Almanac</title>
+    <style>
+        /* ===========================================================
+           दिनमान — Digitized Panchang Keepsake
+           Design concept: a cherished family almanac, reopened.
+           Warm brass/marigold + temple maroon by day; oil-lamp glow by night.
+           =========================================================== */
+
+        :root {
+            --bg: #EAD9AF;
+            --bg-2: #F3E6C2;
+            --mat: #FBF6E8;
+            --mat-edge: #E9DDBE;
+            --ink: #2B1B10;
+            --ink-soft: #5B4630;
+            --maroon: #7A1220;
+            --maroon-2: #9A1B2C;
+            --gold: #A87A22;
+            --gold-bright: #C9962F;
+            --gold-line: linear-gradient(90deg, transparent, #C9962F, transparent);
+            --shadow: rgba(50, 25, 8, 0.38);
+            --paper-filter: contrast(1.05) saturate(1.06) brightness(1.02);
+            --header-h: 68px;
+            --footer-h: 78px;
+            color-scheme: light;
+        }
+
+        body.theme-dark {
+            --bg: #100C08;
+            --bg-2: #1B140D;
+            --mat: #241B12;
+            --mat-edge: #382A1A;
+            --ink: #EFE2C4;
+            --ink-soft: #C7B48C;
+            --maroon: #C43B4C;
+            --maroon-2: #E14D5D;
+            --gold: #D9A441;
+            --gold-bright: #F1C567;
+            --gold-line: linear-gradient(90deg, transparent, #F1C567, transparent);
+            --shadow: rgba(0, 0, 0, 0.65);
+            --paper-filter: contrast(1.08) saturate(0.92) brightness(0.86);
+            color-scheme: dark;
+        }
+
+        body.reading-mode {
+            --bg: #EFE6CE;
+            --bg-2: #F5EEDA;
+            --mat: #FBF7EA;
+        }
+        body.reading-mode.theme-dark {
+            --bg: #0B0906;
+            --bg-2: #150F0A;
+            --mat: #1C150E;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            overscroll-behavior: none;
+        }
+
+        body {
+            font-family: 'Poppins', 'Noto Sans Devanagari', 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+            transition: background .5s ease, color .5s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            background:
+                radial-gradient(ellipse at 20% -10%, rgba(201, 150, 47, 0.20), transparent 55%),
+                radial-gradient(ellipse at 85% 110%, rgba(122, 18, 32, 0.16), transparent 55%),
+                repeating-radial-gradient(circle at 0 0, transparent 0, transparent 38px, rgba(0, 0, 0, 0.02) 39px);
+            pointer-events: none;
+            z-index: 0;
+            transition: background .5s ease;
+        }
+
+        .wordmark {
+            font-family: 'Yatra One', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+            letter-spacing: .5px;
+        }
+
+        button {
+            font-family: inherit;
+            cursor: pointer;
+        }
+        input {
+            font-family: inherit;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        /* ============== GATE (name entry) ============== */
+        #gate {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .gate-card {
+            position: relative;
+            width: min(440px, 100%);
+            background: var(--mat);
+            border-radius: 18px;
+            padding: 44px 36px 36px;
+            box-shadow: 0 30px 60px var(--shadow), 0 2px 0 var(--gold-bright) inset;
+            border: 1px solid var(--mat-edge);
+            text-align: center;
+            animation: rise .8s cubic-bezier(.2, .8, .2, 1);
+        }
+
+        @keyframes rise {
+            from {
+                opacity: 0;
+                transform: translateY(24px) scale(.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .gate-motif {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 10px;
+            color: var(--gold-bright);
+        }
+
+        .gate-card h1 {
+            font-family: 'Yatra One', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+            font-size: 2.4rem;
+            margin: 4px 0 2px;
+            color: var(--maroon-2);
+        }
+        .gate-card .subtitle {
+            font-family: 'Tiro Devanagari Hindi', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+            color: var(--ink-soft);
+            margin: 0 0 22px;
+            font-size: 1.02rem;
+        }
+
+        .rule {
+            height: 2px;
+            width: 120px;
+            margin: 0 auto 22px;
+            background: var(--gold-line);
+        }
+
+        .gate-card label {
+            display: block;
+            text-align: left;
+            font-size: .82rem;
+            color: var(--ink-soft);
+            margin-bottom: 8px;
+            letter-spacing: .2px;
+        }
+
+        .name-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        #nameInput {
+            flex: 1;
+            padding: 13px 16px;
+            border-radius: 12px;
+            border: 1.5px solid var(--mat-edge);
+            background: var(--bg-2);
+            color: var(--ink);
+            font-size: 1rem;
+            outline: none;
+            transition: border-color .2s, box-shadow .2s;
+        }
+        #nameInput:focus {
+            border-color: var(--gold-bright);
+            box-shadow: 0 0 0 3px rgba(201, 150, 47, 0.22);
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            padding: 13px 22px;
+            font-weight: 600;
+            font-size: .96rem;
+            letter-spacing: .2px;
+            transition: transform .15s ease, box-shadow .15s ease, opacity .15s ease;
+        }
+        .btn:active {
+            transform: translateY(1px) scale(.98);
+        }
+
+        .btn-primary {
+            background: linear-gradient(160deg, var(--gold-bright), var(--gold));
+            color: #2A1804;
+            box-shadow: 0 8px 20px rgba(168, 122, 34, 0.35);
+        }
+        .btn-primary:hover {
+            box-shadow: 0 10px 26px rgba(168, 122, 34, 0.5);
+        }
+        .btn-primary:disabled {
+            opacity: .45;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        .gate-enter-btn {
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .gate-hint {
+            margin-top: 14px;
+            font-size: .76rem;
+            color: var(--ink-soft);
+            opacity: .75;
+        }
+
+        /* ============== WELCOME MODAL ============== */
+        #welcomeOverlay {
+            position: fixed;
+            inset: 0;
+            z-index: 60;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(10, 6, 2, 0.55);
+            backdrop-filter: blur(3px);
+            animation: fadeIn .35s ease;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .welcome-modal {
+            width: min(420px, 90vw);
+            background: var(--mat);
+            border-radius: 18px;
+            padding: 40px 30px 30px;
+            text-align: center;
+            box-shadow: 0 30px 70px rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--mat-edge);
+            animation: popIn .45s cubic-bezier(.2, .9, .25, 1.2);
+        }
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(.85) translateY(14px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+        .welcome-modal .diya {
+            font-size: 2.4rem;
+            display: block;
+            margin-bottom: 6px;
+        }
+        .welcome-modal h2 {
+            font-family: 'Yatra One', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+            color: var(--maroon-2);
+            font-size: 1.7rem;
+            margin: 0 0 8px;
+        }
+        .welcome-modal p {
+            color: var(--ink-soft);
+            font-family: 'Tiro Devanagari Hindi', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+            font-size: 1rem;
+            line-height: 1.6;
+            margin: 0 0 22px;
+        }
+
+        /* ============== BOOK APP SHELL ============== */
+        #bookApp {
+            position: fixed;
+            inset: 0;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .topbar {
+            height: var(--header-h);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 18px;
+            position: relative;
+            z-index: 5;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--ink);
+        }
+        .brand svg {
+            color: var(--gold-bright);
+            width: 26px;
+            height: 26px;
+            flex-shrink: 0;
+        }
+        .brand .brand-text {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.05;
+        }
+        .brand .brand-text b {
+            font-family: 'Yatra One', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+            font-size: 1.25rem;
+            color: var(--maroon-2);
+        }
+        .brand .brand-text span {
+            font-size: .68rem;
+            color: var(--ink-soft);
+            letter-spacing: .4px;
+        }
+
+        .topbar-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: 1px solid var(--mat-edge);
+            background: var(--mat);
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background .2s, transform .15s, border-color .2s;
+        }
+        .icon-btn svg {
+            width: 19px;
+            height: 19px;
+        }
+        .icon-btn:hover {
+            border-color: var(--gold-bright);
+        }
+        .icon-btn:active {
+            transform: scale(.92);
+        }
+        .icon-btn.active {
+            background: var(--gold-bright);
+            color: #2A1804;
+            border-color: var(--gold-bright);
+        }
+
+        /* ============== STAGE ============== */
+        .stage-wrap {
+            flex: 1;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            padding: 10px 14px;
+        }
+
+        .perspective {
+            perspective: 2600px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ---- Closed cover ---- */
+        #coverStage {
+            cursor: pointer;
+            transition: opacity .5s ease;
+        }
+        .cover-book {
+            position: relative;
+            width: min(58vh, 92vw);
+            aspect-ratio: 1240/1755;
+            max-height: 82vh;
+            border-radius: 6px 10px 10px 6px;
+            box-shadow:
+                0 2px 0 2px #b3852b,
+                0 30px 55px var(--shadow),
+                -10px 0 22px rgba(0, 0, 0, 0.25) inset;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            transition: transform .9s cubic-bezier(.55, .06, .18, 1);
+            transform-origin: left center;
+            background: var(--mat);
+            animation: floatCover 5s ease-in-out infinite;
+        }
+        @keyframes floatCover {
+            0%,
+            100% {
+                transform: translateY(0) rotateZ(0deg);
+            }
+            50% {
+                transform: translateY(-8px) rotateZ(-.3deg);
+            }
+        }
+        .cover-book.opening {
+            animation: none;
+            transform: rotateY(-155deg);
+        }
+        .cover-book img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: var(--paper-filter);
+            display: block;
+        }
+        .cover-spine {
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 14px;
+            background: linear-gradient(90deg, rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0));
+        }
+        .cover-tap-hint {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 22px;
+            text-align: center;
+            color: #fff;
+            font-size: .85rem;
+            letter-spacing: .4px;
+            text-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+            animation: pulseHint 1.8s ease-in-out infinite;
+            pointer-events: none;
+            font-family: 'Tiro Devanagari Hindi', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+        }
+        @keyframes pulseHint {
+            0%,
+            100% {
+                opacity: .55;
+                transform: translateY(0);
+            }
+            50% {
+                opacity: 1;
+                transform: translateY(-4px);
+            }
+        }
+
+        /* ---- Open book / page flip ---- */
+        #bookStage {
+            position: relative;
+            width: min(58vh, 92vw);
+            aspect-ratio: 1240/1755;
+            max-height: 82vh;
+        }
+
+        .page-mat {
+            position: absolute;
+            inset: 0;
+            background: var(--mat);
+            border-radius: 4px 10px 10px 4px;
+            box-shadow: 0 26px 50px var(--shadow), 0 0 0 1px var(--mat-edge);
+            overflow: hidden;
+        }
+        .page-mat img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: var(--mat);
+            filter: var(--paper-filter);
+            display: block;
+        }
+
+        .page-layer {
+            position: absolute;
+            inset: 0;
+            border-radius: 4px 10px 10px 4px;
+            overflow: hidden;
+        }
+
+        .flip-leaf {
+            position: absolute;
+            inset: 0;
+            transform-style: preserve-3d;
+            transform-origin: left center;
+            transition: transform .78s cubic-bezier(.4, .05, .25, 1);
+            z-index: 6;
+            pointer-events: none;
+            border-radius: 4px 10px 10px 4px;
+        }
+        .flip-leaf.origin-right {
+            transform-origin: right center;
+        }
+
+        .flip-face {
+            position: absolute;
+            inset: 0;
+            backface-visibility: hidden;
+            background: var(--mat);
+            border-radius: 4px 10px 10px 4px;
+            overflow: hidden;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.15) inset;
+        }
+        .flip-face img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            background: var(--mat);
+            filter: var(--paper-filter);
+            display: block;
+        }
+        .flip-face.back {
+            transform: rotateY(180deg);
+        }
+
+        .flip-leaf.turning-next {
+            transform: rotateY(-180deg);
+        }
+        .flip-leaf.turning-next .flip-face {
+            box-shadow: -18px 0 30px -8px rgba(0, 0, 0, 0.35) inset;
+        }
+
+        .flip-leaf.turning-prev {
+            transform: rotateY(0deg);
+        }
+
+        .corner-tap {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 16%;
+            z-index: 8;
+            cursor: pointer;
+        }
+        .corner-tap.left {
+            left: 0;
+        }
+        .corner-tap.right {
+            right: 0;
+        }
+
+        .nav-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            background: var(--mat);
+            border: 1px solid var(--mat-edge);
+            color: var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 6px 18px var(--shadow);
+            z-index: 9;
+            opacity: .88;
+            transition: opacity .2s, transform .15s;
+        }
+        .nav-arrow:hover {
+            opacity: 1;
+        }
+        .nav-arrow:active {
+            transform: translateY(-50%) scale(.9);
+        }
+        .nav-arrow.prev {
+            left: -14px;
+        }
+        .nav-arrow.next {
+            right: -14px;
+        }
+        .nav-arrow svg {
+            width: 18px;
+            height: 18px;
+        }
+        .nav-arrow:disabled {
+            opacity: .25;
+            cursor: default;
+        }
+
+        /* ============== FOOTER ============== */
+        .footerbar {
+            height: var(--footer-h);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 18px;
+            padding: 0 18px;
+            position: relative;
+            z-index: 5;
+        }
+
+        .progress-wrap {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            width: min(420px, 62vw);
+        }
+        .progress-track {
+            width: 100%;
+            height: 5px;
+            border-radius: 3px;
+            background: var(--mat-edge);
+            overflow: hidden;
+            cursor: pointer;
+        }
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+            width: 0%;
+            transition: width .5s ease;
+        }
+        .page-count {
+            font-size: .78rem;
+            color: var(--ink-soft);
+            letter-spacing: .3px;
+        }
+
+        /* ============== SLIDE-IN HELP TOAST ============== */
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: calc(var(--footer-h) + 14px);
+            transform: translateX(-50%) translateY(20px);
+            background: var(--maroon);
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: .82rem;
+            box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .35s ease, transform .35s ease;
+            z-index: 20;
+            font-family: 'Tiro Devanagari Hindi', 'Noto Serif Devanagari', 'Noto Sans Devanagari', 'Mangal', 'Kokila', serif;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ============== READING MODE ADJUSTMENTS ============== */
+        body.reading-mode .topbar .brand,
+        body.reading-mode .footerbar .page-count {
+            opacity: .55;
+        }
+        body.reading-mode .icon-btn:not(.icon-reading):not(.icon-theme) {
+            opacity: .5;
+        }
+        body.reading-mode #bookStage,
+        body.reading-mode .cover-book {
+            max-height: 90vh;
+        }
+
+        /* ============== RESPONSIVE ============== */
+        @media (max-width: 640px) {
+            :root {
+                --header-h: 58px;
+                --footer-h: 70px;
+            }
+            .brand .brand-text span {
+                display: none;
+            }
+            .gate-card {
+                padding: 34px 22px 26px;
+            }
+            .gate-card h1 {
+                font-size: 2rem;
+            }
+            .nav-arrow {
+                width: 34px;
+                height: 34px;
+            }
+            .nav-arrow.prev {
+                left: -8px;
+            }
+            .nav-arrow.next {
+                right: -8px;
+            }
+            .progress-wrap {
+                width: 52vw;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .cover-book {
+                animation: none;
+            }
+            .flip-leaf {
+                transition-duration: .01ms;
+            }
+        }
+    </style>
+</head>
+<body class="theme-light">
+
+    <!-- ============ GATE : NAME ENTRY ============ -->
+    <div id="gate">
+        <div class="gate-card">
+            <svg class="gate-motif" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="30" stroke="currentColor" stroke-width="1.4" opacity=".5"/>
+                <circle cx="32" cy="32" r="22" stroke="currentColor" stroke-width="1.4" opacity=".7"/>
+                <g stroke="currentColor" stroke-width="1.4">
+                    <path d="M32 4 L32 12 M32 52 L32 60 M4 32 L12 32 M52 32 L60 32"/>
+                    <path d="M11.5 11.5 L17 17 M47 47 L52.5 52.5 M52.5 11.5 L47 17 M17 47 L11.5 52.5"/>
+                </g>
+                <circle cx="32" cy="32" r="7" fill="currentColor"/>
+            </svg>
+            <h1>दिनमान</h1>
+            <p class="subtitle">लघु पंचांग &nbsp;•&nbsp; एक पारिवारिक धरोहर</p>
+            <div class="rule"></div>
+            <form id="gateForm" autocomplete="off">
+                <label for="nameInput">प्रवेश हेतु अपना नाम लिखें · Enter your name</label>
+                <div class="name-row">
+                    <input id="nameInput" type="text" placeholder="आपका नाम / Your name" maxlength="40" required />
+                </div>
+                <button type="submit" class="btn btn-primary gate-enter-btn" id="gateSubmitBtn">
+                    पुस्तक खोलें — Open the Book
+                </button>
+            </form>
+            <p class="gate-hint">पन्ने पलटें, ध्वनि सुनें और अपनी सुविधानुसार थीम चुनें।</p>
+        </div>
+    </div>
+
+    <!-- ============ WELCOME POPUP ============ -->
+    <div id="welcomeOverlay" class="hidden">
+        <div class="welcome-modal">
+            <span class="diya">🪔</span>
+            <h2 id="welcomeHeading">स्वागत है!</h2>
+            <p id="welcomeMsg">आपका दिनमान लघु पंचांग में हार्दिक स्वागत है। आइए, साथ मिलकर पन्ने पलटते हैं।</p>
+            <button class="btn btn-primary" id="welcomeContinueBtn" style="width:100%">आगे बढ़ें · Continue</button>
+        </div>
+    </div>
+
+    <!-- ============ BOOK APP ============ -->
+    <div id="bookApp" class="hidden">
+
+        <header class="topbar">
+            <div class="brand">
+                <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 5.5C4 4.67 4.67 4 5.5 4H11V20H5.5C4.67 20 4 19.33 4 18.5V5.5Z" stroke="currentColor" stroke-width="1.5"/>
+                    <path d="M20 5.5C20 4.67 19.33 4 18.5 4H13V20H18.5C19.33 20 20 19.33 20 18.5V5.5Z" stroke="currentColor" stroke-width="1.5"/>
+                </svg>
+                <div class="brand-text">
+                    <b>दिनमान</b>
+                    <span id="greetLine">लघु पंचांग</span>
+                </div>
+            </div>
+            <div class="topbar-controls">
+                <button class="icon-btn icon-reading" id="readingBtn" title="Reading mode">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M12 6.5C10.3 5 7.7 4.5 4 5v13c3.7-.5 6.3 0 8 1.5 1.7-1.5 4.3-2 8-1.5V5c-3.7-.5-6.3 0-8 1.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 6.5V20" stroke="currentColor" stroke-width="1.5"/></svg>
+                </button>
+                <button class="icon-btn icon-theme" id="themeBtn" title="Toggle dark / light">
+                    <svg viewBox="0 0 24 24" fill="none" id="themeIcon"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+                </button>
+                <button class="icon-btn" id="soundBtn" title="Toggle page-turn sound">
+                    <svg viewBox="0 0 24 24" fill="none" id="soundIcon"><path d="M4 9v6h4l5 4V5L8 9H4Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M16.5 9a4 4 0 0 1 0 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+                <button class="icon-btn" id="fullscreenBtn" title="Fullscreen">
+                    <svg viewBox="0 0 24 24" fill="none"><path d="M4 9V5a1 1 0 0 1 1-1h4M20 9V5a1 1 0 0 0-1-1h-4M4 15v4a1 1 0 0 0 1 1h4M20 15v4a1 1 0 0 1-1 1h-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                </button>
+            </div>
+        </header>
+
+        <div class="stage-wrap">
+            <div class="perspective">
+
+                <!-- Closed cover -->
+                <div id="coverStage">
+                    <div class="cover-book" id="coverBook">
+                        <div class="cover-spine"></div>
+                        <img id="coverImg" src="" alt="दिनमान लघु पंचांग — मुखपृष्ठ">
+                        <div class="cover-tap-hint">पुस्तक खोलने के लिए स्पर्श करें · Tap to open</div>
+                    </div>
+                </div>
+
+                <!-- Open pages -->
+                <div id="bookStage" class="hidden">
+                    <div class="page-mat">
+                        <img id="baseImg" src="" alt="Page">
+                    </div>
+
+                    <div class="flip-leaf" id="flipLeaf">
+                        <div class="flip-face front"><img id="leafFront" src="" alt=""></div>
+                        <div class="flip-face back"><img id="leafBack" src="" alt=""></div>
+                    </div>
+
+                    <div class="corner-tap left" id="tapLeft"></div>
+                    <div class="corner-tap right" id="tapRight"></div>
+
+                    <button class="nav-arrow prev" id="prevBtn" title="Previous page">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                    <button class="nav-arrow next" id="nextBtn" title="Next page">
+                        <svg viewBox="0 0 24 24" fill="none"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <footer class="footerbar" id="footerBar" style="display:none">
+            <div class="progress-wrap">
+                <div class="progress-track" id="progressTrack">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="page-count" id="pageCount">1 / 47</div>
+            </div>
+        </footer>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <!-- PDF.js renders the uploaded book directly from its Vercel asset -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        (function() {
+            "use strict";
+
+            // ----- Book PDF asset -----
+            // Keep 1000005237.pdf in the same folder as index.html when deploying to Vercel.
+            // Using a relative path makes it work on both the Vercel domain and custom domains.
+            const PDF_ASSET = './1000005237.pdf';
+            let pdfDocument = null;
+            let pdfReady = false;
+            let TOTAL_PAGES = 1;
+            const PAGE_DATA = Object.create(null);
+            const pageRenderPromises = Object.create(null);
+
+            async function renderPdfPage(pageNum) {
+                if (PAGE_DATA[pageNum]) return PAGE_DATA[pageNum];
+                if (pageRenderPromises[pageNum]) return pageRenderPromises[pageNum];
+
+                pageRenderPromises[pageNum] = (async function () {
+                    const page = await pdfDocument.getPage(pageNum);
+                    const viewport = page.getViewport({ scale: 1.5 });
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d', { alpha: false });
+                    canvas.width = Math.ceil(viewport.width);
+                    canvas.height = Math.ceil(viewport.height);
+
+                    await page.render({
+                        canvasContext: ctx,
+                        viewport: viewport,
+                        background: '#FBF6E8'
+                    }).promise;
+
+                    const image = canvas.toDataURL('image/jpeg', 0.92);
+                    PAGE_DATA[pageNum] = image;
+                    return image;
+                })();
+
+                try {
+                    return await pageRenderPromises[pageNum];
+                } finally {
+                    delete pageRenderPromises[pageNum];
+                }
+            }
+
+            async function loadPdfBook() {
+                if (!window.pdfjsLib) {
+                    throw new Error('PDF renderer failed to load');
+                }
+
+                pdfjsLib.GlobalWorkerOptions.workerSrc =
+                    'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+                pdfDocument = await pdfjsLib.getDocument(PDF_ASSET).promise;
+                TOTAL_PAGES = pdfDocument.numPages;
+                await renderPdfPage(1);
+                pdfReady = true;
+            }
+
+            function getPageImage(pageNum) {
+                return PAGE_DATA[pageNum] || '';
+            }
+
+            // ----- State -----
+            let currentPage = 1;
+            let isFlipping = false;
+            let soundEnabled = true;
+            let userName = '';
+
+            // ----- DOM refs -----
+            const gate = document.getElementById('gate');
+            const gateForm = document.getElementById('gateForm');
+            const nameInput = document.getElementById('nameInput');
+            const gateSubmitBtn = document.getElementById('gateSubmitBtn');
+            const bookApp = document.getElementById('bookApp');
+            const welcomeOverlay = document.getElementById('welcomeOverlay');
+            const welcomeHeading = document.getElementById('welcomeHeading');
+            const welcomeMsg = document.getElementById('welcomeMsg');
+            const welcomeContinueBtn = document.getElementById('welcomeContinueBtn');
+            const coverStage = document.getElementById('coverStage');
+            const coverBook = document.getElementById('coverBook');
+            const coverImg = document.getElementById('coverImg');
+            const bookStage = document.getElementById('bookStage');
+            const baseImg = document.getElementById('baseImg');
+            const leafFront = document.getElementById('leafFront');
+            const leafBack = document.getElementById('leafBack');
+            const flipLeaf = document.getElementById('flipLeaf');
+            const tapLeft = document.getElementById('tapLeft');
+            const tapRight = document.getElementById('tapRight');
+            const prevBtn = document.getElementById('prevBtn');
+            const nextBtn = document.getElementById('nextBtn');
+            const progressFill = document.getElementById('progressFill');
+            const pageCount = document.getElementById('pageCount');
+            const footerBar = document.getElementById('footerBar');
+            const toast = document.getElementById('toast');
+            const readingBtn = document.getElementById('readingBtn');
+            const themeBtn = document.getElementById('themeBtn');
+            const soundBtn = document.getElementById('soundBtn');
+            const fullscreenBtn = document.getElementById('fullscreenBtn');
+            const greetLine = document.getElementById('greetLine');
+
+            // ----- Cover image -----
+            // Cover is assigned after the PDF asset is loaded.
+
+            // ----- Functions -----
+            function showToast(msg, duration) {
+                duration = duration || 2000;
+                toast.textContent = msg;
+                toast.classList.add('show');
+                clearTimeout(toast._timer);
+                toast._timer = setTimeout(function() {
+                    toast.classList.remove('show');
+                }, duration);
+            }
+
+            function updateUI() {
+                const total = TOTAL_PAGES;
+                const pct = ((currentPage - 1) / (total - 1)) * 100;
+                progressFill.style.width = pct + '%';
+                pageCount.textContent = currentPage + ' / ' + total;
+                prevBtn.disabled = (currentPage <= 1);
+                nextBtn.disabled = (currentPage >= total);
+            }
+
+            async function loadPage(pageNum) {
+                if (!pdfReady || pageNum < 1 || pageNum > TOTAL_PAGES) return;
+                const data = await renderPdfPage(pageNum);
+                baseImg.src = data;
+
+                const nextPage = pageNum + 1;
+                const prevPage = pageNum - 1;
+
+                if (nextPage <= TOTAL_PAGES) {
+                    renderPdfPage(nextPage).then(function(img) { leafFront.src = img; });
+                } else {
+                    leafFront.src = data;
+                }
+
+                if (prevPage >= 1) {
+                    renderPdfPage(prevPage).then(function(img) { leafBack.src = img; });
+                } else {
+                    leafBack.src = data;
+                }
+
+                currentPage = pageNum;
+                updateUI();
+            }
+
+            function flipToPage(targetPage, direction) {
+                if (isFlipping) return;
+                if (targetPage < 1 || targetPage > TOTAL_PAGES) return;
+                if (targetPage === currentPage) return;
+
+                isFlipping = true;
+
+                const dir = (targetPage > currentPage) ? 'next' : 'prev';
+                const flipDir = dir === 'next' ? 'turning-next' : 'turning-prev';
+
+                // Prepare the leaf images from the actual PDF pages.
+                Promise.all([renderPdfPage(targetPage), renderPdfPage(currentPage)]).then(function(images) {
+                    if (dir === 'next') {
+                        leafFront.src = images[0];
+                        leafBack.src = images[1];
+                    } else {
+                        leafFront.src = images[1];
+                        leafBack.src = images[0];
+                    }
+                });
+
+                // Reset flip leaf
+                flipLeaf.className = 'flip-leaf';
+                if (dir === 'next') {
+                    flipLeaf.style.transformOrigin = 'left center';
+                    flipLeaf.classList.remove('origin-right');
+                } else {
+                    flipLeaf.style.transformOrigin = 'right center';
+                    flipLeaf.classList.add('origin-right');
+                }
+
+                // Force reflow
+                void flipLeaf.offsetWidth;
+
+                // Start flip
+                flipLeaf.classList.add(flipDir);
+
+                // Play sound
+                if (soundEnabled) {
+                    try {
+                        const ctx = new(window.AudioContext || window.webkitAudioContext)();
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.frequency.value = 600;
+                        osc.type = 'sine';
+                        gain.gain.value = 0.08;
+                        osc.start();
+                        osc.stop(ctx.currentTime + 0.08);
+                    } catch (e) { /* ignore */ }
+                }
+
+                // After animation completes
+                setTimeout(function() {
+                    baseImg.src = PAGE_DATA[targetPage] || baseImg.src;
+                    currentPage = targetPage;
+                    updateUI();
+
+                    // Reset flip leaf
+                    flipLeaf.className = 'flip-leaf';
+                    flipLeaf.style.transformOrigin = 'left center';
+                    flipLeaf.classList.remove('origin-right');
+
+                    // Preload adjacent pages
+                    const nextPg = currentPage + 1;
+                    const prevPg = currentPage - 1;
+                    if (nextPg <= TOTAL_PAGES) {
+                        renderPdfPage(nextPg).then(function(img) { leafFront.src = img; });
+                    } else {
+                        leafFront.src = PAGE_DATA[currentPage] || baseImg.src;
+                    }
+                    if (prevPg >= 1) {
+                        renderPdfPage(prevPg).then(function(img) { leafBack.src = img; });
+                    } else {
+                        leafBack.src = PAGE_DATA[currentPage] || baseImg.src;
+                    }
+
+                    isFlipping = false;
+                }, 820);
+            }
+
+            function goToPage(pageNum) {
+                if (pageNum < 1 || pageNum > TOTAL_PAGES) return;
+                if (pageNum === currentPage) return;
+                const dir = (pageNum > currentPage) ? 'next' : 'prev';
+                flipToPage(pageNum, dir);
+            }
+
+            function nextPage() {
+                if (currentPage < TOTAL_PAGES) {
+                    goToPage(currentPage + 1);
+                }
+            }
+
+            function prevPage() {
+                if (currentPage > 1) {
+                    goToPage(currentPage - 1);
+                }
+            }
+
+            // ----- Open book from cover -----
+            function openBook() {
+                coverBook.classList.add('opening');
+                setTimeout(function() {
+                    coverStage.style.display = 'none';
+                    bookStage.classList.remove('hidden');
+                    footerBar.style.display = 'flex';
+                    loadPage(1);
+                    showToast('पुस्तक खुल गई · Book opened', 1500);
+                }, 950);
+            }
+
+            // ----- Gate / Entry -----
+            gateSubmitBtn.disabled = true;
+            const pdfReadyTimer = setInterval(function() {
+                if (pdfReady) { gateSubmitBtn.disabled = false; clearInterval(pdfReadyTimer); }
+            }, 100);
+
+            gateForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const name = nameInput.value.trim();
+                if (!name) {
+                    showToast('कृपया अपना नाम दर्ज करें · Please enter your name', 2000);
+                    return;
+                }
+                userName = name;
+                gate.style.display = 'none';
+                bookApp.classList.remove('hidden');
+
+                welcomeHeading.textContent = 'स्वागत है, ' + name + '!';
+                welcomeMsg.textContent = 'आपका दिनमान लघु पंचांग में हार्दिक स्वागत है। आइए, साथ मिलकर पन्ने पलटते हैं।';
+                welcomeOverlay.classList.remove('hidden');
+
+                greetLine.textContent = 'लघु पंचांग · ' + name;
+            });
+
+            welcomeContinueBtn.addEventListener('click', function() {
+                welcomeOverlay.classList.add('hidden');
+                coverStage.style.display = 'block';
+                bookStage.classList.add('hidden');
+                footerBar.style.display = 'none';
+                setTimeout(function() {
+                    openBook();
+                }, 800);
+            });
+
+            // ----- Cover click -----
+            coverStage.addEventListener('click', function() {
+                if (!coverBook.classList.contains('opening')) {
+                    openBook();
+                }
+            });
+
+            // ----- Navigation -----
+            prevBtn.addEventListener('click', prevPage);
+            nextBtn.addEventListener('click', nextPage);
+
+            tapLeft.addEventListener('click', prevPage);
+            tapRight.addEventListener('click', nextPage);
+
+            // Keyboard
+            document.addEventListener('keydown', function(e) {
+                if (bookApp.classList.contains('hidden')) return;
+                if (e.key === 'ArrowRight' || e.key === ' ') {
+                    e.preventDefault();
+                    nextPage();
+                } else if (e.key === 'ArrowLeft') {
+                    e.preventDefault();
+                    prevPage();
+                } else if (e.key === 'Home') {
+                    e.preventDefault();
+                    goToPage(1);
+                } else if (e.key === 'End') {
+                    e.preventDefault();
+                    goToPage(TOTAL_PAGES);
+                }
+            });
+
+            // Progress bar click
+            document.getElementById('progressTrack').addEventListener('click', function(e) {
+                const rect = this.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const target = Math.floor(x * TOTAL_PAGES) + 1;
+                goToPage(Math.min(TOTAL_PAGES, Math.max(1, target)));
+            });
+
+            // ----- Theme toggle -----
+            themeBtn.addEventListener('click', function() {
+                document.body.classList.toggle('theme-dark');
+                const icon = document.getElementById('themeIcon');
+                if (document.body.classList.contains('theme-dark')) {
+                    icon.innerHTML =
+                    '<path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9zm0 16a7 7 0 1 1 7-7 7 7 0 0 1-7 7z" fill="currentColor"/>';
+                } else {
+                    icon.innerHTML =
+                        '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>';
+                }
+                showToast(document.body.classList.contains('theme-dark') ? '🌙 रात्रि मोड · Dark mode' : '☀️ दिवस मोड · Light mode',
+                1200);
+            });
+
+            // ----- Reading mode -----
+            readingBtn.addEventListener('click', function() {
+                document.body.classList.toggle('reading-mode');
+                this.classList.toggle('active');
+                showToast(document.body.classList.contains('reading-mode') ? '📖 पठन मोड · Reading mode' : '📚 सामान्य मोड · Normal mode',
+                    1200);
+            });
+
+            // ----- Sound toggle -----
+            soundBtn.addEventListener('click', function() {
+                soundEnabled = !soundEnabled;
+                this.classList.toggle('active');
+                showToast(soundEnabled ? '🔊 ध्वनि चालू · Sound on' : '🔇 ध्वनि बंद · Sound off', 1200);
+            });
+            soundBtn.classList.remove('active');
+
+            // ----- Fullscreen -----
+            fullscreenBtn.addEventListener('click', function() {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(function() {});
+                } else {
+                    if (document.exitFullscreen) {
+                        document.exitFullscreen();
+                    }
+                }
+            });
+
+            // ----- Touch / swipe support -----
+            let touchStartX = 0;
+            let touchStartY = 0;
+            document.addEventListener('touchstart', function(e) {
+                if (bookApp.classList.contains('hidden')) return;
+                const touch = e.touches[0];
+                touchStartX = touch.clientX;
+                touchStartY = touch.clientY;
+            }, { passive: true });
+
+            document.addEventListener('touchend', function(e) {
+                if (bookApp.classList.contains('hidden')) return;
+                if (touchStartX === 0) return;
+                const touchEnd = e.changedTouches[0];
+                const dx = touchEnd.clientX - touchStartX;
+                const dy = touchEnd.clientY - touchStartY;
+                if (Math.abs(dx) < 30 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
+                if (dx < 0) {
+                    nextPage();
+                } else {
+                    prevPage();
+                }
+                touchStartX = 0;
+            }, { passive: true });
+
+            // ----- Init: load the real uploaded PDF before opening the book -----
+            loadPdfBook().then(function() {
+                coverImg.src = PAGE_DATA[1];
+                loadPage(1);
+                pageCount.textContent = '1 / ' + TOTAL_PAGES;
+                console.log('दिनमान PDF loaded successfully. Total pages:', TOTAL_PAGES);
+            }).catch(function(error) {
+                console.error('Unable to load PDF asset:', error);
+                const hint = document.querySelector('.gate-hint');
+                if (hint) {
+                    hint.textContent = 'पुस्तक फ़ाइल लोड नहीं हुई। 1000005237.pdf को index.html के साथ उसी फ़ोल्डर में रखें।';
+                }
+                gateSubmitBtn.disabled = true;
+            });
+
+            // Set initial theme icon
+            const icon = document.getElementById('themeIcon');
+            icon.innerHTML =
+                '<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/>';
+
+            console.log('दिनमान — लघु पंचांग loaded successfully. Total pages:', TOTAL_PAGES);
+        })();
+    </script>
+
+</body>
+</html>
